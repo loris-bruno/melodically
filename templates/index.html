@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.2/socket.io.js"></script>
+  
+  <title>{{ title }}</title>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1 class="mb-4">{{ title }}</h1>
+
+      </div>
+    </div>
+    <div class="row ">
+      <div class="col">
+        <div class="form-group">
+          <select class="form-control form-control-lg w-100" onchange="changeSound(this.options[this.selectedIndex].value)" >
+            {% for sound in sounds %}
+              {% if sound == selectedSound %}
+                <option value="{{sound}}" selected>{{ sound }}</option> 
+              {% else %} 
+                <option value="{{sound}}">{{ sound }}</option> 
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button onclick="start()" id="startBtn" class="btn btn-primary btn-lg mt-3 w-100">Start</button>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col">
+        running: <span><b id="txt_playing"></b></span>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        last result: <span><b id="txt_result"></b></span>
+      </div>
+    </div>
+    </div>
+
+  <script>
+    var playing = false;
+    
+    var socket = io.connect('http://'+document.domain+':'+location.port);
+    socket.on('connect', function() {
+      console.log('connected');
+    });
+    socket.on('playing', function(data) {
+      console.log('data', data);
+      playing = data;
+      $("#txt_playing").text(playing);
+      $("#startBtn").prop("disabled", playing);
+    });
+    socket.on('result', function(data) {
+      console.log('last result', data);
+      $("#txt_result").text(JSON.stringify(data));
+    });
+    
+    function start() {
+      console.log("starting fct")
+      $.post( "/start", {
+        value: 'on' 
+      });
+    }
+
+    function changeSound(newSound) {
+      console.log("changed", newSound)
+      $.post( "/setsounds", {
+        sound: newSound 
+      });
+    }
+  </script>
+
+    
+</body>
+</html>
